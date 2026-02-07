@@ -1,93 +1,246 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XKeen Config Generator</title>
+    <title>Генератор outbounds для роутера</title>
     <style>
-        body.dark-theme {
-            background-color: #1e1e1e;
-            color: #c9d1d9;
+        :root {
+            --bg: #0f1117;
+            --text: #e2e8f0;
+            --card: #1a1f2e;
+            --accent: #6366f1;
+            --accent-dark: #4f46e5;
+            --input-bg: #1e2538;
+            --border: #334155;
+            --warning: #f87171;
         }
 
         body.light-theme {
-            background-color: #ffffff;
-            color: #000000;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
+            --accent: #6366f1;
+            --accent-dark: #4f46e5;
+            --input-bg: #f1f5f9;
+            --border: #cbd5e1;
+            --warning: #ef4444;
         }
 
-        button, input {
-            background-color: #444;
-            color: #fff;
-            border: none;
-            padding: 8px;
-            margin: 4px;
-            border-radius: 4px;
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            transition: background 0.4s, color 0.4s;
         }
 
-        body.light-theme button, body.light-theme input {
-            background-color: #ddd;
-            color: #000;
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.4rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.05rem;
+            margin-bottom: 1.8rem;
         }
 
         #theme-toggle {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        #theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: #94a3b8;
+            font-size: 1.05rem;
+        }
+
+        input[type="text"] {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.6rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.03rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        button:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        button.secondary {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            background: #2d3748;
+        }
+
+        #warnings {
+            color: var(--warning);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 1.2rem 0;
+            min-height: 1.6rem;
         }
 
         pre {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 4px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: #c7d2fe;
+            padding: 1.4rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-size: 0.94rem;
+            line-height: 1.55;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         body.light-theme pre {
-            background-color: #f4f4f4;
-            color: #000;
+            color: #1e293b;
+        }
+
+        @media (max-width: 600px) {
+            .buttons { flex-direction: column; }
+            h1 { font-size: 1.9rem; }
+            .subtitle { font-size: 0.98rem; }
         }
     </style>
 </head>
 <body class="dark-theme">
-    <h1>XKeen Config Generator</h1>
-    <label for="url">Введите ссылку:</label>
-    <input type="text" id="url" placeholder="vless://...">
-    <button onclick="generateConfig()">Сгенерировать конфиг</button>
-    <button onclick="saveConfig()">Сохранить в файл</button>
-    <button id="theme-toggle" onclick="toggleTheme()">Сменить тему</button>
-    <div id="warnings" style="color: red;"></div>
-    <pre id="output"></pre>
+    <div class="container">
+        <button id="theme-toggle">Светлая тема</button>
+
+        <header>
+            <h1>Генератор outbounds для роутера</h1>
+            <div class="subtitle">Xray · sing-box · v2ray · XKeen</div>
+        </header>
+
+        <div class="input-group">
+            <label for="url">Вставьте ссылку подключения:</label>
+            <input type="text" id="url" placeholder="vless://…  или  vmess://…  или  trojan://…  или  ss://…">
+        </div>
+
+        <div class="buttons">
+            <button onclick="generateConfig()">Создать outbounds.json</button>
+            <button onclick="saveConfig()" class="secondary">Скачать конфиг</button>
+        </div>
+
+        <div id="warnings"></div>
+
+        <pre id="output">// Результат появится здесь после нажатия кнопки</pre>
+    </div>
 
     <script>
-        let config = {};
+        let config = null;
 
         function generateConfig() {
-            const url = document.getElementById('url').value;
-            const regex = /([a-z]+):\/\/([^@]+)@([^:]+):(\d+)/;
-            const match = url.match(regex);
+            const url = document.getElementById('url').value.trim();
+            const output = document.getElementById('output');
+            const warningsDiv = document.getElementById('warnings');
+
+            warningsDiv.innerHTML = '';
+            output.textContent = '// Ожидание ввода корректной ссылки...';
+
+            if (!url) {
+                warningsDiv.textContent = '⚠️ Вставьте ссылку подключения';
+                output.textContent = '';
+                return;
+            }
+
+            config = null;
 
             if (url.startsWith("vmess://")) {
+                // VMess логика (оставил как была в твоём первом варианте)
                 const base64Payload = url.substring(8);
                 try {
                     const decodedPayload = atob(base64Payload);
                     const vmessConfig = JSON.parse(decodedPayload);
-                    console.log("Decoded VMess Config:", vmessConfig); // Для отладки
 
                     config = {
                         "outbounds": [
                             {
-                                "tag": "vless-reality",    // Фиксированное название соединения
+                                "tag": "vless-reality",  // ← как в желаемом примере
                                 "protocol": "vmess",
                                 "settings": {
                                     "vnext": [
                                         {
-                                            "address": vmessConfig.add,    // IP адрес или доменное имя сервера
-                                            "port": vmessConfig.port,      // Порт сервера
+                                            "address": vmessConfig.add,
+                                            "port": vmessConfig.port,
                                             "users": [
                                                 {
-                                                    "id": vmessConfig.id,    // UUID пользователя
-                                                    "alterId": vmessConfig.aid || 0,  // Альтернативный ID (по умолчанию 0)
-                                                    "security": vmessConfig.scy || "auto", // Метод шифрования
+                                                    "id": vmessConfig.id,
+                                                    "alterId": vmessConfig.aid || 0,
+                                                    "security": vmessConfig.scy || "auto",
                                                     "level": 0
                                                 }
                                             ]
@@ -95,12 +248,12 @@
                                     ]
                                 },
                                 "streamSettings": {
-                                    "network": vmessConfig.net,    // Тип сети (tcp, kcp, ws, h2 и т.д.)
-                                    "security": vmessConfig.tls === "tls" ? "tls" : "none",  // TLS
+                                    "network": vmessConfig.net,
+                                    "security": vmessConfig.tls === "tls" ? "tls" : "none",
                                     "tlsSettings": vmessConfig.tls === "tls" ? {
                                         "allowInsecure": true,
                                         "serverName": vmessConfig.sni || "",
-                                        "fingerprint": vmessConfig.fp || ""  // Добавлен fingerprint
+                                        "fingerprint": vmessConfig.fp || ""
                                     } : undefined,
                                     "wsSettings": vmessConfig.net === "ws" ? {
                                         "path": vmessConfig.path || "",
@@ -141,152 +294,143 @@
                             }
                         ]
                     };
-                    document.getElementById('output').textContent = JSON.stringify(config, null, 4);
                 } catch (e) {
-                    console.error("Error parsing VMess link:", e);
-                    document.getElementById('output').textContent = "Ошибка разбора vmess ссылки.";
-                }
-            } else if (match) {
-                const protocol = match[1];
-                const userInfo = match[2];
-                const address = match[3];
-                const port = parseInt(match[4], 10);
-
-                const parsedUrl = new URL(url);
-                const params = new URLSearchParams(parsedUrl.search);
-
-                // Предупреждения
-                let warnings = [];
-                if (port !== 443 && protocol !== "ss") {
-                    warnings.push("⚠️ Рекомендуется использовать порт 443.");
-                }
-
-                // Обновляем отображение предупреждений
-                document.getElementById('warnings').innerHTML = warnings.join("<br>");
-
-                // Генерация конфигурации
-                if (protocol === "vless" || protocol === "trojan") {
-                    config = {
-                        "outbounds": [
-                            {
-                                "tag": "vless-reality",    // Фиксированное название соединения
-                                "protocol": protocol,       // Протокол
-                                "settings": {
-                                    "vnext": protocol === "vless" ? [
-                                        {
-                                            "address": address,    // IP адрес или доменное имя сервера
-                                            "port": port,    // Порт Reality
-                                            "users": [
-                                                {
-                                                    "id": userInfo,    // ID, присвоенный пользователю на сервере
-                                                    "flow": params.get("flow") || "",    // Flow
-                                                    "encryption": "none",                                
-                                                    "level": 0                                  
-                                                }
-                                            ]
-                                        }
-                                    ] : undefined,
-                                    "servers": protocol === "trojan" ? [
-                                        {
-                                            "address": address,    // IP адрес или доменное имя сервера
-                                            "port": port,    // Порт Reality
-                                            "password": userInfo,    // Пароль для Trojan
-                                            "flow": params.get("flow") || "",    // Flow
-                                            "method": "chacha20-poly1305", // Метод шифрования (например, для Trojan)
-                                            "ota": false,                 // One Time Auth для метода (если применимо)
-                                            "level": 0
-                                        }
-                                    ] : undefined
-                                },
-                                "streamSettings": {
-                                    "network": params.get("type") || "tcp",    // Network - установка по умолчанию на "tcp"
-                                    "security": params.get("security") || (protocol === "trojan" ? "tls" : ""),  // Security
-                                    "tlsSettings": (params.get("security") === "tls" || protocol === "trojan") ? {
-                                        "alpn": params.get("alpn") ? params.get("alpn").split(',') : [],
-                                        "fingerprint": params.get("fp") || "",
-                                        "serverName": params.get("sni") || "",
-                                        "allowInsecure": true,
-                                        "show": false
-                                    } : undefined,
-                                    "realitySettings": params.get("security") === "reality" ? {
-                                        "publicKey": params.get("pbk") || "",    // Public Key
-                                        "fingerprint": params.get("fp") || "",   // Fingerprint
-                                        "serverName": params.get("sni") || "",   // SNI
-                                        "shortId": params.get("sid") || "",    // Short ID
-                                        "spiderX": params.get("spx") || "/"    // SpiderX
-                                    } : undefined,
-                                    "wsSettings": params.get("type") === "ws" ? {
-                                        "path": params.get("path") || "",
-                                        "headers": {
-                                            "Host": params.get("host") || ""
-                                        }
-                                    } : undefined
-                                }
-                            },
-                            {
-                                "tag": "direct",
-                                "protocol": "freedom"
-                            },
-                            {
-                                "tag": "block",
-                                "protocol": "blackhole",
-                                "settings": {
-                                    "response": {
-                                        "type": "http"
-                                    }
-                                }
-                            }
-                        ]
-                    };
-                    document.getElementById('output').textContent = JSON.stringify(config, null, 4);
-                } else if (protocol === "ss") {
-                    const parsedParams = new URLSearchParams(url.split('?')[1] || "");
-                    const method = parsedParams.get("method") || "aes-256-gcm";
-                    const password = parsedParams.get("password") || "";
-
-                    config = {
-                        "outbounds": [
-                            {
-                                "tag": "ss",
-                                "protocol": "shadowsocks",
-                                "settings": {
-                                    "servers": [
-                                        {
-                                            "address": address,
-                                            "port": port,
-                                            "method": method,
-                                            "password": password
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "tag": "direct",
-                                "protocol": "freedom"
-                            },
-                            {
-                                "tag": "block",
-                                "protocol": "blackhole",
-                                "settings": {
-                                    "response": {
-                                        "type": "http"
-                                    }
-                                }
-                            }
-                        ]
-                    };
-                    document.getElementById('output').textContent = JSON.stringify(config, null, 4);
-                } else {
-                    document.getElementById('warnings').innerText = "Unsupported protocol.";
-                    document.getElementById('output').textContent = "Протокол не поддерживается.";
+                    warningsDiv.innerHTML = '⚠️ Ошибка разбора vmess-ссылки';
+                    output.textContent = '// ' + e.message;
+                    return;
                 }
             } else {
-                document.getElementById('warnings').innerText = "Invalid URL format.";
-                document.getElementById('output').textContent = "Неверный формат ссылки.";
+                try {
+                    const parsedUrl = new URL(url);
+                    const protocol = parsedUrl.protocol.replace(':', '');
+                    const userInfo = parsedUrl.username + (parsedUrl.password ? ':' + parsedUrl.password : '');
+                    const address = parsedUrl.hostname;
+                    const port = parseInt(parsedUrl.port, 10) || 443;
+                    const params = new URLSearchParams(parsedUrl.search);
+
+                    let warnings = [];
+                    if (port !== 443 && protocol !== "ss") {
+                        warnings.push("⚠️ Рекомендуется использовать порт 443.");
+                    }
+                    if (warnings.length) {
+                        warningsDiv.innerHTML = warnings.join("<br>");
+                    }
+
+                    if (protocol === "vless" || protocol === "trojan") {
+                        config = {
+                            "outbounds": [
+                                {
+                                    "tag": "vless-reality",   // ← фиксировано как в твоём примере
+                                    "protocol": protocol,
+                                    "settings": {
+                                        "vnext": protocol === "vless" ? [
+                                            {
+                                                "address": address,
+                                                "port": port,
+                                                "users": [
+                                                    {
+                                                        "id": userInfo,
+                                                        "flow": params.get("flow") || "",
+                                                        "encryption": "none",
+                                                        "level": 0
+                                                    }
+                                                ]
+                                            }
+                                        ] : undefined,
+                                        "servers": protocol === "trojan" ? [
+                                            {
+                                                "address": address,
+                                                "port": port,
+                                                "password": userInfo,
+                                                "flow": params.get("flow") || "",
+                                                "level": 0
+                                            }
+                                        ] : undefined
+                                    },
+                                    "streamSettings": {
+                                        "network": params.get("type") || "tcp",
+                                        "security": params.get("security") || (protocol === "trojan" ? "tls" : ""),
+                                        "tlsSettings": (params.get("security") === "tls" || protocol === "trojan") ? {
+                                            "allowInsecure": true,
+                                            "serverName": params.get("sni") || "",
+                                            "fingerprint": params.get("fp") || ""
+                                        } : undefined,
+                                        "realitySettings": params.get("security") === "reality" ? {
+                                            "publicKey": params.get("pbk") || "",
+                                            "fingerprint": params.get("fp") || "",
+                                            "serverName": params.get("sni") || "",
+                                            "shortId": params.get("sid") || "",
+                                            "spiderX": params.get("spx") || "/"
+                                            // ↑ убрано "show": false — теперь как в желаемом выводе
+                                        } : undefined,
+                                        "wsSettings": params.get("type") === "ws" ? {
+                                            "path": params.get("path") || "",
+                                            "headers": {
+                                                "Host": params.get("host") || ""
+                                            }
+                                        } : undefined
+                                    }
+                                },
+                                {
+                                    "tag": "direct",
+                                    "protocol": "freedom"
+                                },
+                                {
+                                    "tag": "block",
+                                    "protocol": "blackhole",
+                                    "settings": {
+                                        "response": {
+                                            "type": "http"
+                                        }
+                                    }
+                                }
+                            ]
+                        };
+                    } else if (protocol === "ss") {
+                        // ss логика (если нужно — можно доработать)
+                        const method = params.get("method") || "aes-256-gcm";
+                        const password = params.get("password") || userInfo || parsedUrl.username;
+
+                        config = {
+                            "outbounds": [
+                                {
+                                    "tag": "ss",
+                                    "protocol": "shadowsocks",
+                                    "settings": {
+                                        "servers": [
+                                            {
+                                                "address": address,
+                                                "port": port,
+                                                "method": method,
+                                                "password": password
+                                            }
+                                        ]
+                                    }
+                                },
+                                { "tag": "direct", "protocol": "freedom" },
+                                { "tag": "block", "protocol": "blackhole", "settings": { "response": { "type": "http" } } }
+                            ]
+                        };
+                    } else {
+                        throw new Error("Протокол не поддерживается");
+                    }
+                } catch (e) {
+                    warningsDiv.innerHTML = "⚠️ Неверный формат ссылки";
+                    output.textContent = '// ' + e.message;
+                    return;
+                }
+            }
+
+            if (config) {
+                output.textContent = JSON.stringify(config, null, 4);
             }
         }
 
         function saveConfig() {
+            if (!config) {
+                alert("Сначала сгенерируйте конфиг!");
+                return;
+            }
             const blob = new Blob([JSON.stringify(config, null, 4)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -295,16 +439,19 @@
         }
 
         function toggleTheme() {
-            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark-theme' : 'light-theme';
-            const newTheme = currentTheme === 'dark-theme' ? 'light-theme' : 'dark-theme';
-            document.body.classList.replace(currentTheme, newTheme);
-            localStorage.setItem('theme', newTheme);
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            document.getElementById('theme-toggle').textContent = isLight ? 'Тёмная тема' : 'Светлая тема';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'dark-theme';
-            document.body.classList.add(savedTheme);
-        });
+        // загрузка темы
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-toggle').textContent = 'Тёмная тема';
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     </script>
 </body>
 </html>
